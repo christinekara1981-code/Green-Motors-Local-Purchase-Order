@@ -1,0 +1,208 @@
+:root {
+  --green: #83c42b;
+  --green-dark: #4f7d12;
+  --gray: #6f7072;
+  --ink: #1d2420;
+  --line: #b9c0bb;
+  --paper: #fff;
+  --danger: #a72c2c;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  color: var(--ink);
+  background: #edf0ed;
+  font: 14px/1.4 Arial, Helvetica, sans-serif;
+}
+button, input, select, textarea { font: inherit; }
+button {
+  border: 0;
+  border-radius: 6px;
+  padding: 9px 14px;
+  color: #fff;
+  background: var(--green-dark);
+  cursor: pointer;
+  font-weight: 700;
+}
+button:hover { filter: brightness(.94); }
+button:disabled { cursor: not-allowed; opacity: .55; }
+button.secondary { color: var(--ink); background: #e3e8e3; }
+button.danger { background: var(--danger); }
+button.icon { padding: 5px 9px; font-size: 18px; }
+
+.app-bar {
+  position: sticky;
+  z-index: 5;
+  top: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 18px;
+  padding: 12px 18px;
+  color: #fff;
+  background: #202823;
+  box-shadow: 0 2px 10px #0003;
+}
+.app-bar strong { font-size: 18px; margin-right: 12px; }
+#saveStatus { color: #cdd7cf; font-size: 12px; }
+.toolbar { display: flex; flex-wrap: wrap; gap: 7px; }
+.workspace {
+  display: grid;
+  grid-template-columns: 230px minmax(700px, 960px);
+  justify-content: center;
+  align-items: start;
+  gap: 18px;
+  padding: 24px;
+}
+.records-panel {
+  position: sticky;
+  top: 82px;
+  padding: 14px;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 3px 16px #0001;
+}
+.records-panel label { display: block; margin-bottom: 7px; font-weight: 700; }
+.records-panel input { width: 100%; margin-bottom: 10px; }
+.record-list { display: grid; gap: 7px; max-height: 72vh; overflow: auto; }
+.record {
+  width: 100%;
+  text-align: left;
+  color: var(--ink);
+  background: #f1f4f1;
+}
+.record.active { outline: 2px solid var(--green); }
+.record span { display: block; font-size: 11px; color: #667069; }
+
+.paper {
+  padding: 36px 42px;
+  background: var(--paper);
+  box-shadow: 0 6px 30px #0002;
+}
+.letterhead {
+  display: grid;
+  grid-template-columns: 250px 1fr;
+  align-items: center;
+  gap: 28px;
+  padding-bottom: 18px;
+  border-bottom: 4px solid var(--green);
+}
+.letterhead img { width: 100%; height: 105px; object-fit: contain; }
+.letterhead h1 { margin: 0 0 7px; color: var(--green-dark); font-size: 25px; }
+.letterhead p { margin: 2px 0; color: var(--gray); font-size: 12px; }
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 11px 22px;
+  margin: 22px 0;
+}
+label { font-weight: 700; }
+input, select, textarea {
+  width: 100%;
+  margin-top: 4px;
+  border: 1px solid #aeb7b0;
+  border-radius: 4px;
+  padding: 8px;
+  background: #fff;
+}
+textarea { resize: vertical; }
+input:read-only { background: #f0f3f0; }
+.wide { grid-column: 1 / -1; }
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 23px;
+}
+.checkbox-label input { width: auto; margin: 0; }
+.checkbox-label.disabled { color: #888; }
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; }
+th, td { border: 1px solid var(--line); padding: 7px; vertical-align: middle; }
+th { color: #fff; background: var(--green-dark); }
+.items-table th:first-child { width: 50px; }
+.items-table th:nth-child(3) { width: 75px; }
+.items-table th:nth-child(4) { width: 120px; }
+.items-table th:nth-child(5), .items-table th:nth-child(6) { width: 110px; }
+.items-table th:last-child { width: 65px; }
+.items-table input, .items-table select, .items-table textarea { margin: 0; }
+.item-code { margin-bottom: 5px !important; }
+.numeric, .line-total { text-align: right; }
+.serial { text-align: center; }
+.add-line { margin-top: 9px; }
+.totals {
+  display: grid;
+  grid-template-columns: 1fr 310px;
+  gap: 18px;
+  align-items: stretch;
+  margin-top: 18px;
+}
+.totals table td { text-align: right; }
+.net-total th, .net-total td { font-weight: 700; background: #edf6df; }
+.amount-words {
+  min-height: 100px;
+  padding: 12px;
+  border: 1px solid var(--line);
+}
+.amount-words strong, .amount-words span { display: block; }
+.amount-words span { margin-top: 10px; font-style: italic; }
+.terms { margin-top: 24px; }
+.terms h2, .signatures h2 { color: var(--green-dark); font-size: 17px; }
+.terms h3 { margin-bottom: 7px; }
+.terms p { margin: 6px 0; }
+.indent { padding-left: 34px; }
+.signatures { margin-top: 28px; }
+.signature-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.signature-card { text-align: center; }
+.signature-card strong { display: block; min-height: 40px; }
+.signature-card canvas {
+  width: 100%;
+  height: 92px;
+  margin-top: 7px;
+  border: 1px dashed #777;
+  background: #fff;
+  touch-action: none;
+}
+.signature-actions { margin: 4px 0; }
+.signature-actions button {
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border-radius: 50%;
+  font-size: 17px;
+  line-height: 1;
+}
+.signature-label { display: block; padding-top: 4px; border-top: 1px solid #333; font-size: 11px; }
+
+dialog { width: min(560px, 92vw); border: 0; border-radius: 10px; box-shadow: 0 15px 60px #0005; }
+dialog::backdrop { background: #0008; }
+dialog label { display: block; margin-top: 14px; }
+dialog small { display: block; margin-top: 4px; color: #5f675f; }
+dialog menu { display: flex; justify-content: flex-end; gap: 8px; padding: 15px 0 0; }
+
+@media (max-width: 1000px) {
+  .workspace { grid-template-columns: 1fr; }
+  .records-panel { position: static; }
+  .record-list { max-height: 180px; }
+}
+
+@media print {
+  @page { size: A4; margin: 8mm; }
+  body { background: #fff; font-size: 10px; }
+  .no-print { display: none !important; }
+  .workspace { display: block; padding: 0; }
+  .paper { width: 100%; padding: 0; box-shadow: none; }
+  .letterhead { grid-template-columns: 180px 1fr; gap: 18px; }
+  .letterhead img { height: 75px; }
+  .letterhead h1 { font-size: 20px; }
+  .info-grid { gap: 5px 16px; margin: 12px 0; }
+  input, select, textarea { padding: 3px; border-color: transparent; appearance: none; }
+  .items-table th:last-child, .items-table td:last-child { display: none; }
+  .totals { grid-template-columns: 1fr 260px; margin-top: 10px; }
+  .terms { margin-top: 12px; }
+  .terms h2, .signatures h2 { margin: 8px 0; }
+  .terms p { margin: 3px 0; }
+  .signatures { margin-top: 12px; break-inside: avoid; }
+  .signature-card canvas { height: 65px; }
+}
