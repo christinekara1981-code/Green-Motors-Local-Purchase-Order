@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Green Motors Local Purchase Order</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="app-bar no-print">
+    <div>
+      <strong>Green Motors LPO</strong>
+      <span id="saveStatus">Ready</span>
+    </div>
+    <div class="toolbar">
+      <button id="newBtn" class="secondary">New</button>
+      <button id="saveBtn">Save</button>
+      <button id="editBtn" class="secondary">Edit</button>
+      <button id="deleteBtn" class="danger">Delete</button>
+      <button id="printBtn" class="secondary">Print / PDF</button>
+      <button id="settingsBtn" class="secondary">Settings</button>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <aside class="records-panel no-print">
+      <label for="recordSearch">Saved LPOs</label>
+      <input id="recordSearch" type="search" placeholder="Search LPO or supplier">
+      <div id="recordList" class="record-list"></div>
+    </aside>
+
+    <form id="lpoForm" class="paper" autocomplete="off">
+      <section class="letterhead">
+        <img src="green-motors-lpo-logo.png" alt="Green Motors logo">
+        <div>
+          <h1>LOCAL PURCHASE ORDER</h1>
+          <p>GREEN MOTORS - SOLE PROPRIETORSHIP LLC</p>
+          <p>Musaffah M16, P.O. Box 28071, Abu Dhabi, UAE</p>
+          <p>TRN: 100447171800003</p>
+        </div>
+      </section>
+
+      <section class="info-grid">
+        <label>Supplier
+          <input name="supplier" required>
+        </label>
+        <label>LPO Number
+          <input name="lpoNumber" readonly>
+        </label>
+        <label>PO Box
+          <input name="poBox">
+        </label>
+        <label>Date
+          <input name="date" type="date" required>
+        </label>
+        <label>Address
+          <textarea name="address" rows="2"></textarea>
+        </label>
+        <label>Quotation Reference No.
+          <input name="quotationReference">
+        </label>
+        <label class="wide">Subject
+          <input name="subject" required>
+        </label>
+        <label>Purchase Type
+          <select name="purchaseType" id="purchaseType">
+            <option value="local">Local Purchase (AED)</option>
+            <option value="international">International Purchase (USD)</option>
+          </select>
+        </label>
+        <label class="checkbox-label">
+          <input name="vatApplicable" id="vatApplicable" type="checkbox">
+          VAT applicable (5%)
+        </label>
+      </section>
+
+      <p>Dear Sir,</p>
+      <p>Reference to the subject, we would like to confirm our order as follows:</p>
+
+      <div class="table-wrap">
+        <table class="items-table">
+          <thead>
+            <tr>
+              <th>Sr.<br>No.</th>
+              <th>Item Code / Description</th>
+              <th>Qty</th>
+              <th>UOM</th>
+              <th>Unit Price</th>
+              <th>Total</th>
+              <th class="no-print">Action</th>
+            </tr>
+          </thead>
+          <tbody id="itemsBody"></tbody>
+        </table>
+      </div>
+      <button type="button" id="addItemBtn" class="secondary add-line no-print">+ Add line item</button>
+
+      <section class="totals">
+        <div class="amount-words">
+          <strong>Total Amount in Words:</strong>
+          <span id="amountWords">Zero UAE Dirhams Only</span>
+        </div>
+        <table>
+          <tr><th>Subtotal</th><td id="subtotal">AED 0.00</td></tr>
+          <tr id="vatRow"><th>VAT 5%</th><td id="vatAmount">AED 0.00</td></tr>
+          <tr class="net-total"><th>Net Total</th><td id="netTotal">AED 0.00</td></tr>
+        </table>
+      </section>
+
+      <section class="terms">
+        <h2>Payment Terms and Conditions:</h2>
+        <label>Payment Terms
+          <input name="paymentTerms">
+        </label>
+        <h3>Invoicing</h3>
+        <p>1.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Please send two (2) copies of your Invoice to GREEN MOTORS – SOLE PROPRIETORSHIP LLC</p>
+        <p class="indent">TRN: 100447171800003</p>
+        <p>2.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Enter the order in accordance with the price, terms, delivery method and specification listed or mentioned in detailed.</p>
+        <p>3.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Send all correspondence related to payment to:</p>
+        <p class="indent">Green Motors – Sole Proprietorship LLC<br>
+          Musaffah M16, P.O. Box 28071, Abu Dhabi, UAE<br>
+          02-5555018, accounts@greenmotors.ae</p>
+      </section>
+
+      <section class="signatures">
+        <h2>For GREEN MOTORS SP LLC</h2>
+        <div class="signature-grid">
+          <div class="signature-card ordered-signature" data-signature="ordered">
+            <strong>Ordered &amp; Checked By:</strong>
+            <input name="orderedName" placeholder="Type name">
+            <canvas width="480" height="150" aria-label="Ordered by signature pad"></canvas>
+            <small class="signature-hint no-print">Type the name and sign here before saving.</small>
+            <div class="signature-actions no-print">
+              <button type="button" class="secondary clear-signature" title="Clear signature" aria-label="Clear signature">×</button>
+            </div>
+            <span class="signature-label">Name &amp; Signature</span>
+          </div>
+          <div class="signature-card" data-signature="hr">
+            <select name="secondSignatoryRole" id="secondSignatoryRole" class="signatory-role" aria-label="Second signatory role">
+              <option value="HR &amp; Admin Manager">HR &amp; Admin Manager</option>
+              <option value="National Aftersales Manager">National Aftersales Manager</option>
+              <option value="General Manager">General Manager</option>
+            </select>
+            <input name="hrName" placeholder="Type name">
+            <canvas width="480" height="150" aria-label="Second signatory signature pad"></canvas>
+            <div class="signature-actions no-print">
+              <button type="button" class="secondary clear-signature" title="Clear signature" aria-label="Clear signature">×</button>
+            </div>
+            <span class="signature-label">Name &amp; Signature</span>
+          </div>
+          <div class="signature-card" id="financeSignatureCard" data-signature="finance">
+            <strong>Finance Manager</strong>
+            <input name="financeName" placeholder="Type name">
+            <canvas width="480" height="150" aria-label="Finance Manager signature pad"></canvas>
+            <div class="signature-actions no-print">
+              <button type="button" class="secondary clear-signature" title="Clear signature" aria-label="Clear signature">×</button>
+            </div>
+            <span class="signature-label">Name &amp; Signature</span>
+          </div>
+        </div>
+      </section>
+    </form>
+  </main>
+
+  <dialog id="settingsDialog">
+    <form method="dialog" id="settingsForm">
+      <h2>Settings</h2>
+      <label>Google Apps Script Web App URL
+        <input id="webAppUrl" type="url" placeholder="https://script.google.com/macros/s/.../exec">
+      </label>
+      <small id="connectionHelp">Paste the deployed Web App URL ending in <code>/exec</code>. Settings from the local file do not transfer to Railway.</small>
+      <label>New delete password
+        <input id="deletePassword" type="password" placeholder="Leave blank to keep current password">
+      </label>
+      <small>Initial password: <code>GM@2026</code>. Change it here and in Code.gs.</small>
+      <menu>
+        <button value="cancel" class="secondary">Cancel</button>
+        <button id="saveSettingsBtn" value="default">Save settings</button>
+      </menu>
+    </form>
+  </dialog>
+
+  <template id="itemRowTemplate">
+    <tr>
+      <td class="serial"></td>
+      <td>
+        <input class="item-code" placeholder="Item code">
+        <textarea class="description" rows="2" placeholder="Description" required></textarea>
+      </td>
+      <td><input class="qty numeric" type="number" min="0" step="any" value="1" required></td>
+      <td><select class="uom" required></select></td>
+      <td><input class="unit-price numeric" type="number" min="0" step="0.01" value="0" required></td>
+      <td class="line-total">0.00</td>
+      <td class="no-print"><button type="button" class="icon danger remove-line" title="Remove line">×</button></td>
+    </tr>
+  </template>
+
+  <script src="app.js"></script>
+</body>
+</html>
