@@ -492,10 +492,12 @@ fields.purchaseType.addEventListener("change", setPurchaseRules);
 fields.vatApplicable.addEventListener("change", calculate);
 fields.secondSignatoryRole.addEventListener("change", setSignatoryRules);
 window.addEventListener("beforeprint", () => {
-  form.classList.toggle("single-page-print", itemsBody.rows.length <= 20);
+  const itemCount = itemsBody.rows.length;
+  form.classList.toggle("standard-page-print", itemCount <= 10);
+  form.classList.toggle("compact-page-print", itemCount > 10 && itemCount <= 20);
 });
 window.addEventListener("afterprint", () => {
-  form.classList.remove("single-page-print");
+  form.classList.remove("standard-page-print", "compact-page-print");
 });
 document.querySelector("#settingsBtn").addEventListener("click", () => {
   document.querySelector("#webAppUrl").value = settings().webAppUrl || "";
