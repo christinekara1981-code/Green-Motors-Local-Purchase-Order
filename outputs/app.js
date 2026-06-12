@@ -54,6 +54,10 @@ function formatLpoNumber(value) {
   return `GMSP/LPO/${String(value).padStart(6, "0")}`;
 }
 
+function isHostedApp() {
+  return location.protocol === "https:" || location.protocol === "http:";
+}
+
 async function sha256(value) {
   const data = new TextEncoder().encode(value);
   const hash = await crypto.subtle.digest("SHA-256", data);
@@ -174,6 +178,14 @@ function setPurchaseRules() {
   calculate();
 }
 
+function setSignatoryRules() {
+  const hideFinance = fields.secondSignatoryRole.value === "National Aftersales Manager";
+  const financeCard = document.querySelector("#financeSignatureCard");
+  const signatureGrid = document.querySelector(".signature-grid");
+  financeCard.hidden = hideFinance;
+  signatureGrid.classList.toggle("two-signatories", hideFinance);
+}
+
 function collectRecord() {
   const totals = calculate();
   return {
@@ -189,9 +201,13 @@ function collectRecord() {
     vatApplicable: fields.vatApplicable.checked,
     paymentTerms: fields.paymentTerms.value.trim(),
     orderedName: fields.orderedName.value.trim(),
+    secondSignatoryRole: fields.secondSignatoryRole.value,
     hrName: fields.hrName.value.trim(),
-    financeName: fields.financeName.value.trim(),
-    signatures: { ...signatures },
+    financeName: fields.secondSignatoryRole.value === "National Aftersales Manager" ? "" : fields.financeName.value.trim(),
+    signatures: {
+      ...signatures,
+      finance: fields.secondSignatoryRole.value === "National Aftersales Manager" ? "" : signatures.finance
+    },
     items: itemData(),
     ...totals,
     updatedAt: new Date().toISOString()
@@ -209,8 +225,25 @@ function validateRecord() {
 }
 
 async function syncToGoogle(action, record, deletePassword = "") {
+  if (isHostedApp()) {
+    try {
+      const response = await fetch("/api/lpo", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action, record, deletePassword })
+      });
+      const result = await response.json();
+      if (!response.ok || result.ok === false) {
+        return { sent: false, reason: "server-error", error: result.error || "Google Sheets sync failed." };
+      }
+      return { sent: true, response: result };
+    } catch (error) {
+      return { sent: false, reason: "network-error", error: error.message };
+    }
+  }
+
   const url = settings().webAppUrl;
-  if (!url) return false;
+  if (!url) return { sent: false, reason: "missing-url" };
   const payload = { action, record, deletePassword };
   try {
     await fetch(url, {
@@ -219,10 +252,10 @@ async function syncToGoogle(action, record, deletePassword = "") {
       headers: { "Content-Type": "text/plain;charset=utf-8" },
       body: JSON.stringify(payload)
     });
-    return true;
+    return { sent: true };
   } catch (error) {
     console.error(error);
-    return false;
+    return { sent: false, reason: "network-error" };
   }
 }
 
@@ -241,8 +274,39 @@ async function saveRecord() {
   setLocked(true);
   renderRecordList();
   setStatus("Saved locally; syncing...");
-  const synced = await syncToGoogle("upsert", record);
-  setStatus(synced ? "Saved locally and sent to Google Sheets" : "Saved locally");
+  const sync = await syncToGoogle("upsert", record);
+  if (sync.sent) {
+    if (sync.response && sync.response.lpoNumber && sync.response.lpoNumber !== record.lpoNumber) {
+      record.lpoNumber = sync.response.lpoNumber;
+      fields.lpoNumber.value = record.lpoNumber;
+      const saved = records();
+      const savedIndex = saved.findIndex(entry => entry.id === record.id);
+      if (savedIndex >= 0) saved[savedIndex] = record;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+      renderRecordList();
+    }
+    setStatus("Saved locally and sent to Google Sheets");
+  } else if (sync.reason === "missing-url") {
+    setStatus("Saved locally only - add the Google Apps Script URL in Settings", true);
+    alert("The LPO was saved in this browser, but Google Sheets is not connected. Open Settings and paste the Apps Script Web App URL ending in /exec.");
+  } else {
+    setStatus("Saved locally; Google Sheets connection failed", true);
+    alert(`The LPO was saved locally, but it could not be sent to Google Sheets.\n\n${sync.error || "Check the Railway Google Sheets connection."}`);
+  }
+}
+
+async function requestSharedLpoNumber() {
+  if (!isHostedApp()) return;
+  try {
+    fields.lpoNumber.value = "Generating...";
+    const response = await fetch("/api/lpo/next", { cache: "no-store" });
+    const result = await response.json();
+    if (!response.ok || !result.lpoNumber) throw new Error(result.error || "Unable to generate LPO number.");
+    fields.lpoNumber.value = result.lpoNumber;
+  } catch (error) {
+    fields.lpoNumber.value = formatLpoNumber(nextNumberValue());
+    setStatus(error.message, true);
+  }
 }
 
 function clearForm() {
@@ -257,8 +321,10 @@ function clearForm() {
   addItem();
   setLocked(false);
   setPurchaseRules();
+  setSignatoryRules();
   renderRecordList();
   setStatus("New LPO");
+  requestSharedLpoNumber();
 }
 
 function loadRecord(id) {
@@ -269,6 +335,7 @@ function loadRecord(id) {
     "purchaseType", "paymentTerms", "orderedName", "hrName", "financeName"].forEach(name => {
       form.elements[name].value = record[name] || "";
     });
+  fields.secondSignatoryRole.value = record.secondSignatoryRole || "HR & Admin Manager";
   fields.vatApplicable.checked = Boolean(record.vatApplicable);
   itemsBody.innerHTML = "";
   (record.items || []).forEach(addItem);
@@ -277,6 +344,7 @@ function loadRecord(id) {
   document.querySelectorAll(".signature-card").forEach(card => restoreSignature(card.dataset.signature));
   setLocked(true);
   setPurchaseRules();
+  setSignatoryRules();
   renderRecordList();
   setStatus(`Loaded ${record.lpoNumber}`);
 }
@@ -342,6 +410,7 @@ function prepareCanvas(card) {
   };
   canvas.addEventListener("pointerdown", event => {
     if (isLocked) return;
+    event.preventDefault();
     drawing = true;
     canvas.setPointerCapture(event.pointerId);
     const p = point(event);
@@ -350,6 +419,7 @@ function prepareCanvas(card) {
   });
   canvas.addEventListener("pointermove", event => {
     if (!drawing) return;
+    event.preventDefault();
     const p = point(event);
     ctx.lineTo(p.x, p.y);
     ctx.stroke();
@@ -393,21 +463,40 @@ document.querySelector("#addItemBtn").addEventListener("click", () => addItem())
 document.querySelector("#recordSearch").addEventListener("input", renderRecordList);
 fields.purchaseType.addEventListener("change", setPurchaseRules);
 fields.vatApplicable.addEventListener("change", calculate);
+fields.secondSignatoryRole.addEventListener("change", setSignatoryRules);
+window.addEventListener("beforeprint", () => {
+  form.classList.toggle("single-page-print", itemsBody.rows.length <= 20);
+});
+window.addEventListener("afterprint", () => {
+  form.classList.remove("single-page-print");
+});
 document.querySelector("#settingsBtn").addEventListener("click", () => {
   document.querySelector("#webAppUrl").value = settings().webAppUrl || "";
+  document.querySelector("#webAppUrl").disabled = isHostedApp();
+  document.querySelector("#connectionHelp").innerHTML = isHostedApp()
+    ? "The hosted app uses the shared Railway <code>GOOGLE_APPS_SCRIPT_URL</code> variable. Configure it once in Railway Variables."
+    : "Paste the deployed Web App URL ending in <code>/exec</code>.";
   document.querySelector("#deletePassword").value = "";
   settingsDialog.showModal();
 });
 document.querySelector("#saveSettingsBtn").addEventListener("click", async event => {
   event.preventDefault();
   const current = settings();
-  current.webAppUrl = document.querySelector("#webAppUrl").value.trim();
+  const webAppUrl = document.querySelector("#webAppUrl").value.trim();
+  if (webAppUrl && (!webAppUrl.startsWith("https://script.google.com/macros/s/") || !webAppUrl.endsWith("/exec"))) {
+    alert("Please paste the deployed Google Apps Script Web App URL. It must begin with https://script.google.com/macros/s/ and end with /exec.");
+    return;
+  }
+  current.webAppUrl = webAppUrl;
   const password = document.querySelector("#deletePassword").value;
   if (password) current.deletePasswordHash = await sha256(password);
   localStorage.setItem(SETTINGS_KEY, JSON.stringify(current));
   settingsDialog.close();
-  setStatus("Settings saved");
+  setStatus(webAppUrl ? "Google Sheets connection saved" : "Google Sheets is not connected", !webAppUrl);
 });
 
 document.querySelectorAll(".signature-card").forEach(prepareCanvas);
 clearForm();
+if (!isHostedApp() && !settings().webAppUrl) {
+  setStatus("Google Sheets not connected - open Settings", true);
+}

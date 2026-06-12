@@ -2,7 +2,16 @@ const DELETE_PASSWORD = 'GM@2026'; // Change this to match the password configur
 const MASTER_SHEET = 'LPO Masterlist';
 const ITEMS_SHEET = 'LPO Line Items';
 
-function doGet() {
+function doGet(e) {
+  if (e && e.parameter && e.parameter.action === 'next-number') {
+    const lock = LockService.getScriptLock();
+    lock.waitLock(30000);
+    try {
+      return jsonResponse_({ ok: true, lpoNumber: nextLpoNumber_() });
+    } finally {
+      lock.releaseLock();
+    }
+  }
   return jsonResponse_({ ok: true, message: 'Green Motors LPO endpoint is active.' });
 }
 
@@ -35,13 +44,14 @@ function upsertRecord_(record) {
     'Record ID', 'LPO Number', 'Date', 'Supplier', 'PO Box', 'Address',
     'Quotation Reference', 'Subject', 'Purchase Type', 'Currency',
     'VAT Applicable', 'Subtotal', 'VAT Amount', 'Net Total', 'Amount in Words',
-    'Payment Terms', 'Ordered & Checked By', 'HR & Admin Manager', 'Finance Manager',
-    'Last Updated'
+    'Payment Terms', 'Ordered & Checked By', 'Second Signatory Name', 'Finance Manager',
+    'Last Updated', 'Second Signatory Role'
   ]);
   const items = getOrCreateSheet_(spreadsheet, ITEMS_SHEET, [
     'Record ID', 'LPO Number', 'Line No.', 'Item Code', 'Description',
     'Quantity', 'UOM', 'Unit Price', 'Line Total'
   ]);
+  record.lpoNumber = assignedLpoNumber_(master, record);
 
   const amountWords = amountInWords_(Number(record.total || 0), record.currency || 'AED');
   const row = [
@@ -49,7 +59,7 @@ function upsertRecord_(record) {
     record.quotationReference, record.subject, record.purchaseType, record.currency,
     record.vatApplicable ? 'Yes' : 'No', Number(record.subtotal || 0), Number(record.vat || 0),
     Number(record.total || 0), amountWords, record.paymentTerms, record.orderedName,
-    record.hrName, record.financeName, new Date()
+    record.hrName, record.financeName, new Date(), record.secondSignatoryRole || 'HR & Admin Manager'
   ];
 
   const rowNumber = findRow_(master, record.id);
@@ -63,6 +73,40 @@ function upsertRecord_(record) {
   ]);
   if (itemRows.length) items.getRange(items.getLastRow() + 1, 1, itemRows.length, itemRows[0].length).setValues(itemRows);
   formatSheets_(master, items);
+}
+
+function assignedLpoNumber_(master, record) {
+  const existingRow = findRow_(master, record.id);
+  if (existingRow) return String(master.getRange(existingRow, 2).getValue());
+
+  const requested = String(record.lpoNumber || '');
+  if (requested && !lpoNumberExists_(master, requested)) return requested;
+  return nextLpoNumber_(master);
+}
+
+function lpoNumberExists_(sheet, lpoNumber) {
+  if (sheet.getLastRow() < 2) return false;
+  return Boolean(sheet.getRange(2, 2, sheet.getLastRow() - 1, 1)
+    .createTextFinder(lpoNumber).matchEntireCell(true).findNext());
+}
+
+function nextLpoNumber_(existingMaster) {
+  const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  const master = existingMaster || getOrCreateSheet_(spreadsheet, MASTER_SHEET, [
+    'Record ID', 'LPO Number', 'Date', 'Supplier', 'PO Box', 'Address',
+    'Quotation Reference', 'Subject', 'Purchase Type', 'Currency',
+    'VAT Applicable', 'Subtotal', 'VAT Amount', 'Net Total', 'Amount in Words',
+    'Payment Terms', 'Ordered & Checked By', 'Second Signatory Name', 'Finance Manager',
+    'Last Updated', 'Second Signatory Role'
+  ]);
+  let highest = 260;
+  if (master.getLastRow() > 1) {
+    master.getRange(2, 2, master.getLastRow() - 1, 1).getDisplayValues().forEach(function(row) {
+      const match = String(row[0]).match(/GMSP\/LPO\/(\d+)$/);
+      if (match) highest = Math.max(highest, Number(match[1]));
+    });
+  }
+  return 'GMSP/LPO/' + String(highest + 1).padStart(6, '0');
 }
 
 function deleteRecord_(recordId) {
@@ -84,6 +128,8 @@ function getOrCreateSheet_(spreadsheet, name, headers) {
     sheet.setFrozenRows(1);
     sheet.getRange(1, 1, 1, headers.length)
       .setBackground('#4f7d12').setFontColor('#ffffff').setFontWeight('bold');
+  } else {
+    sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
   }
   return sheet;
 }

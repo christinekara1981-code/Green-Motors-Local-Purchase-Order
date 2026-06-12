@@ -125,25 +125,31 @@
       <section class="signatures">
         <h2>For GREEN MOTORS SP LLC</h2>
         <div class="signature-grid">
-          <div class="signature-card" data-signature="ordered">
+          <div class="signature-card ordered-signature" data-signature="ordered">
             <strong>Ordered &amp; Checked By:</strong>
             <input name="orderedName" placeholder="Type name">
             <canvas width="480" height="150" aria-label="Ordered by signature pad"></canvas>
+            <small class="signature-hint no-print">Type the name and sign here before saving.</small>
             <div class="signature-actions no-print">
               <button type="button" class="secondary clear-signature" title="Clear signature" aria-label="Clear signature">×</button>
             </div>
             <span class="signature-label">Name &amp; Signature</span>
           </div>
           <div class="signature-card" data-signature="hr">
-            <strong>HR &amp; Admin Manager</strong>
+            <label class="role-label no-print" for="secondSignatoryRole">Select signatory role</label>
+            <select name="secondSignatoryRole" id="secondSignatoryRole" class="signatory-role" aria-label="Second signatory role">
+              <option value="HR &amp; Admin Manager">HR &amp; Admin Manager</option>
+              <option value="National Aftersales Manager">National Aftersales Manager</option>
+              <option value="General Manager">General Manager</option>
+            </select>
             <input name="hrName" placeholder="Type name">
-            <canvas width="480" height="150" aria-label="HR and Admin Manager signature pad"></canvas>
+            <canvas width="480" height="150" aria-label="Second signatory signature pad"></canvas>
             <div class="signature-actions no-print">
               <button type="button" class="secondary clear-signature" title="Clear signature" aria-label="Clear signature">×</button>
             </div>
             <span class="signature-label">Name &amp; Signature</span>
           </div>
-          <div class="signature-card" data-signature="finance">
+          <div class="signature-card" id="financeSignatureCard" data-signature="finance">
             <strong>Finance Manager</strong>
             <input name="financeName" placeholder="Type name">
             <canvas width="480" height="150" aria-label="Finance Manager signature pad"></canvas>
@@ -163,7 +169,7 @@
       <label>Google Apps Script Web App URL
         <input id="webAppUrl" type="url" placeholder="https://script.google.com/macros/s/.../exec">
       </label>
-      <small>Leave blank to use local storage only. See SETUP-GOOGLE-SHEETS.md.</small>
+      <small id="connectionHelp">Paste the deployed Web App URL ending in <code>/exec</code>. Settings from the local file do not transfer to Railway.</small>
       <label>New delete password
         <input id="deletePassword" type="password" placeholder="Leave blank to keep current password">
       </label>

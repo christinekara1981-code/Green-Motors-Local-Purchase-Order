@@ -154,8 +154,28 @@ th { color: #fff; background: var(--green-dark); }
 .indent { padding-left: 34px; }
 .signatures { margin-top: 28px; }
 .signature-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.signature-grid.two-signatories { grid-template-columns: repeat(2, 1fr); }
 .signature-card { text-align: center; }
+.signature-card[hidden] { display: none; }
 .signature-card strong { display: block; min-height: 40px; }
+.role-label {
+  display: block;
+  margin-bottom: 3px;
+  color: #657068;
+  font-size: 10px;
+}
+.signatory-role {
+  min-height: 40px;
+  margin: 0 0 6px;
+  border: 2px solid var(--green-dark);
+  border-radius: 5px;
+  padding: 7px 30px 7px 8px;
+  color: var(--ink);
+  background-color: #f5faed;
+  text-align: center;
+  font-weight: 700;
+  cursor: pointer;
+}
 .signature-card canvas {
   width: 100%;
   height: 92px;
@@ -165,6 +185,13 @@ th { color: #fff; background: var(--green-dark); }
   touch-action: none;
 }
 .signature-actions { margin: 4px 0; }
+.signature-hint {
+  display: block;
+  margin-top: 3px;
+  color: #657068;
+  font-size: 10px;
+  font-weight: 400;
+}
 .signature-actions button {
   width: 26px;
   height: 26px;
@@ -188,11 +215,11 @@ dialog menu { display: flex; justify-content: flex-end; gap: 8px; padding: 15px 
 }
 
 @media print {
-  @page { size: A4; margin: 8mm; }
-  body { background: #fff; font-size: 10px; }
+  @page { size: A4 portrait; margin: 7mm; }
+  html, body { width: auto; min-width: 0; background: #fff; font-size: 9px; }
   .no-print { display: none !important; }
   .workspace { display: block; padding: 0; }
-  .paper { width: 100%; padding: 0; box-shadow: none; }
+  .paper { width: 100%; max-width: none; padding: 0; box-shadow: none; }
   .letterhead { grid-template-columns: 180px 1fr; gap: 18px; }
   .letterhead img { height: 75px; }
   .letterhead h1 { font-size: 20px; }
@@ -205,4 +232,73 @@ dialog menu { display: flex; justify-content: flex-end; gap: 8px; padding: 15px 
   .terms p { margin: 3px 0; }
   .signatures { margin-top: 12px; break-inside: avoid; }
   .signature-card canvas { height: 65px; }
+  .items-table { break-inside: auto; }
+  .items-table thead { display: table-header-group; }
+  .items-table tr { break-inside: avoid; break-after: auto; }
+  .totals, .terms, .signatures { break-inside: avoid; }
+
+  .paper.single-page-print {
+    width: 111.11%;
+    zoom: .90;
+  }
+  .single-page-print .letterhead {
+    grid-template-columns: 155px 1fr;
+    gap: 12px;
+    padding-bottom: 8px;
+  }
+  .single-page-print .letterhead img { height: 58px; }
+  .single-page-print .letterhead h1 { margin-bottom: 2px; font-size: 17px; }
+  .single-page-print .letterhead p { margin: 0; font-size: 9px; }
+  .single-page-print .info-grid { gap: 2px 12px; margin: 7px 0; }
+  .single-page-print p { margin: 2px 0; }
+  .single-page-print input,
+  .single-page-print select,
+  .single-page-print textarea { min-height: 0; padding: 1px 2px; }
+  .single-page-print .items-table th,
+  .single-page-print .items-table td { padding: 0 2px; }
+  .single-page-print .items-table input,
+  .single-page-print .items-table select,
+  .single-page-print .items-table textarea {
+    height: 13px;
+    min-height: 13px;
+    line-height: 11px;
+    font-size: 7px;
+    vertical-align: middle;
+  }
+  .single-page-print .items-table td:nth-child(2) { white-space: nowrap; }
+  .single-page-print .item-code {
+    display: inline-block;
+    width: 28%;
+    margin: 0 1% 0 0 !important;
+  }
+  .single-page-print .description {
+    display: inline-block;
+    width: 70%;
+    overflow: hidden;
+    resize: none;
+  }
+  .single-page-print .totals {
+    grid-template-columns: 1fr 250px;
+    gap: 8px;
+    margin-top: 5px;
+  }
+  .single-page-print .amount-words { min-height: 54px; padding: 5px; }
+  .single-page-print .amount-words span { margin-top: 3px; }
+  .single-page-print .terms { margin-top: 5px; }
+  .single-page-print .terms h2,
+  .single-page-print .terms h3,
+  .single-page-print .signatures h2 { margin: 3px 0; font-size: 12px; }
+  .single-page-print .terms p { margin: 1px 0; line-height: 1.2; }
+  .single-page-print .signatures { margin-top: 4px; }
+  .single-page-print .signature-grid { gap: 6px; }
+  .single-page-print .signature-card strong { min-height: 12px; font-size: 8px; }
+  .signatory-role {
+    border: 0;
+    padding: 1px;
+    background: transparent;
+  }
+  .single-page-print .signatory-role { min-height: 13px; height: 13px; margin-bottom: 1px; font-size: 7px; }
+  .single-page-print .signature-card input { height: 13px; font-size: 7px; }
+  .single-page-print .signature-card canvas { height: 25px; margin-top: 1px; }
+  .single-page-print .signature-label { padding-top: 1px; font-size: 7px; }
 }

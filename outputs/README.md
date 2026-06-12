@@ -13,6 +13,9 @@ Included features:
 - Typed signatory names and three online signature pads
 - Save, edit, password-protected delete, record search, and Print/PDF
 - Browser-local records plus optional Google Sheets master-list synchronization
+- Shared Railway-to-Google-Sheets synchronization for all hosted users
+- Centralized duplicate-safe LPO numbering through Google Apps Script
+- Verified one-page A4 printing for up to 20 line items
 
 See `SETUP-GOOGLE-SHEETS.md` to connect the app to Google Sheets.
 
