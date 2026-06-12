@@ -40,6 +40,10 @@ function records() {
   catch { return []; }
 }
 
+function storeRecords(value) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(value));
+}
+
 function settings() {
   try { return JSON.parse(localStorage.getItem(SETTINGS_KEY)) || {}; }
   catch { return {}; }
@@ -286,6 +290,7 @@ async function saveRecord() {
       renderRecordList();
     }
     setStatus("Saved locally and sent to Google Sheets");
+    loadSharedRecords();
   } else if (sync.reason === "missing-url") {
     setStatus("Saved locally only - add the Google Apps Script URL in Settings", true);
     alert("The LPO was saved in this browser, but Google Sheets is not connected. Open Settings and paste the Apps Script Web App URL ending in /exec.");
@@ -306,6 +311,28 @@ async function requestSharedLpoNumber() {
   } catch (error) {
     fields.lpoNumber.value = formatLpoNumber(nextNumberValue());
     setStatus(error.message, true);
+  }
+}
+
+async function loadSharedRecords() {
+  if (!isHostedApp()) return;
+  try {
+    setStatus("Loading shared LPO records...");
+    const response = await fetch("/api/lpo", { cache: "no-store" });
+    const result = await response.json();
+    if (!response.ok || result.ok === false || !Array.isArray(result.records)) {
+      throw new Error(result.error || "Unable to load shared records.");
+    }
+    const merged = new Map(records().map(record => [record.id, record]));
+    result.records.forEach(record => merged.set(record.id, record));
+    const allRecords = [...merged.values()].sort((a, b) =>
+      String(b.updatedAt || "").localeCompare(String(a.updatedAt || ""))
+    );
+    storeRecords(allRecords);
+    renderRecordList();
+    setStatus(`Loaded ${result.records.length} shared LPO${result.records.length === 1 ? "" : "s"}`);
+  } catch (error) {
+    setStatus(`Shared records unavailable: ${error.message}`, true);
   }
 }
 
@@ -497,6 +524,7 @@ document.querySelector("#saveSettingsBtn").addEventListener("click", async event
 
 document.querySelectorAll(".signature-card").forEach(prepareCanvas);
 clearForm();
+loadSharedRecords();
 if (!isHostedApp() && !settings().webAppUrl) {
   setStatus("Google Sheets not connected - open Settings", true);
 }

@@ -47,11 +47,15 @@ async function proxyGoogleRequest(request, response, requestPath) {
   }
 
   try {
-    const isNextNumber = request.method === "GET" && requestPath === "/api/lpo/next";
-    const targetUrl = isNextNumber
-      ? `${googleAppsScriptUrl}${googleAppsScriptUrl.includes("?") ? "&" : "?"}action=next-number`
+    const queryAction = request.method === "GET" && requestPath === "/api/lpo/next"
+      ? "next-number"
+      : request.method === "GET" && requestPath === "/api/lpo"
+        ? "list-records"
+        : "";
+    const targetUrl = queryAction
+      ? `${googleAppsScriptUrl}${googleAppsScriptUrl.includes("?") ? "&" : "?"}action=${queryAction}`
       : googleAppsScriptUrl;
-    const options = isNextNumber
+    const options = queryAction
       ? { method: "GET", redirect: "follow" }
       : {
           method: "POST",
@@ -82,6 +86,7 @@ const server = http.createServer(async (request, response) => {
   }
   if (
     (request.method === "POST" && requestPath === "/api/lpo") ||
+    (request.method === "GET" && requestPath === "/api/lpo") ||
     (request.method === "GET" && requestPath === "/api/lpo/next")
   ) {
     await proxyGoogleRequest(request, response, requestPath);

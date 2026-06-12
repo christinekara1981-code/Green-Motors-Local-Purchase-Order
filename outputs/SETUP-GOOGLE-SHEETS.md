@@ -17,6 +17,7 @@ The local form saves every LPO in the browser first. Complete these steps once t
 13. Allow Railway to redeploy.
 
 The hosted app uses this shared Railway variable. Users do not need to configure the Google Apps Script URL in their own browsers.
+The saved-LPO sidebar is also loaded from the master list, so all hosted users can see and reopen shared records.
 
 The script automatically creates:
 

@@ -12,6 +12,9 @@ function doGet(e) {
       lock.releaseLock();
     }
   }
+  if (e && e.parameter && e.parameter.action === 'list-records') {
+    return jsonResponse_({ ok: true, records: listRecords_() });
+  }
   return jsonResponse_({ ok: true, message: 'Green Motors LPO endpoint is active.' });
 }
 
@@ -45,7 +48,8 @@ function upsertRecord_(record) {
     'Quotation Reference', 'Subject', 'Purchase Type', 'Currency',
     'VAT Applicable', 'Subtotal', 'VAT Amount', 'Net Total', 'Amount in Words',
     'Payment Terms', 'Ordered & Checked By', 'Second Signatory Name', 'Finance Manager',
-    'Last Updated', 'Second Signatory Role'
+    'Last Updated', 'Second Signatory Role', 'Ordered Signature',
+    'Second Signatory Signature', 'Finance Signature'
   ]);
   const items = getOrCreateSheet_(spreadsheet, ITEMS_SHEET, [
     'Record ID', 'LPO Number', 'Line No.', 'Item Code', 'Description',
@@ -59,7 +63,10 @@ function upsertRecord_(record) {
     record.quotationReference, record.subject, record.purchaseType, record.currency,
     record.vatApplicable ? 'Yes' : 'No', Number(record.subtotal || 0), Number(record.vat || 0),
     Number(record.total || 0), amountWords, record.paymentTerms, record.orderedName,
-    record.hrName, record.financeName, new Date(), record.secondSignatoryRole || 'HR & Admin Manager'
+    record.hrName, record.financeName, new Date(), record.secondSignatoryRole || 'HR & Admin Manager',
+    signatureValue_(record.signatures && record.signatures.ordered),
+    signatureValue_(record.signatures && record.signatures.hr),
+    signatureValue_(record.signatures && record.signatures.finance)
   ];
 
   const rowNumber = findRow_(master, record.id);
@@ -84,6 +91,75 @@ function assignedLpoNumber_(master, record) {
   return nextLpoNumber_(master);
 }
 
+function signatureValue_(value) {
+  const signature = String(value || '');
+  return signature.length <= 50000 ? signature : '';
+}
+
+function listRecords_() {
+  const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  const master = spreadsheet.getSheetByName(MASTER_SHEET);
+  const itemsSheet = spreadsheet.getSheetByName(ITEMS_SHEET);
+  if (!master || master.getLastRow() < 2) return [];
+
+  const masterValues = master.getRange(2, 1, master.getLastRow() - 1, Math.max(master.getLastColumn(), 24)).getValues();
+  const itemsByRecord = {};
+  if (itemsSheet && itemsSheet.getLastRow() > 1) {
+    itemsSheet.getRange(2, 1, itemsSheet.getLastRow() - 1, 9).getValues().forEach(function(row) {
+      const recordId = String(row[0] || '');
+      if (!recordId) return;
+      if (!itemsByRecord[recordId]) itemsByRecord[recordId] = [];
+      itemsByRecord[recordId].push({
+        line: Number(row[2] || 0),
+        itemCode: String(row[3] || ''),
+        description: String(row[4] || ''),
+        qty: Number(row[5] || 0),
+        uom: String(row[6] || 'EA'),
+        unitPrice: Number(row[7] || 0),
+        total: Number(row[8] || 0)
+      });
+    });
+  }
+
+  return masterValues.map(function(row) {
+    const id = String(row[0] || '');
+    return {
+      id: id,
+      lpoNumber: String(row[1] || ''),
+      date: row[2] instanceof Date
+        ? Utilities.formatDate(row[2], Session.getScriptTimeZone(), 'yyyy-MM-dd')
+        : String(row[2] || ''),
+      supplier: String(row[3] || ''),
+      poBox: String(row[4] || ''),
+      address: String(row[5] || ''),
+      quotationReference: String(row[6] || ''),
+      subject: String(row[7] || ''),
+      purchaseType: String(row[8] || 'local'),
+      currency: String(row[9] || 'AED'),
+      vatApplicable: String(row[10] || '').toLowerCase() === 'yes',
+      subtotal: Number(row[11] || 0),
+      vat: Number(row[12] || 0),
+      total: Number(row[13] || 0),
+      paymentTerms: String(row[15] || ''),
+      orderedName: String(row[16] || ''),
+      hrName: String(row[17] || ''),
+      financeName: String(row[18] || ''),
+      updatedAt: row[19] instanceof Date ? row[19].toISOString() : String(row[19] || ''),
+      secondSignatoryRole: String(row[20] || 'HR & Admin Manager'),
+      signatures: {
+        ordered: String(row[21] || ''),
+        hr: String(row[22] || ''),
+        finance: String(row[23] || '')
+      },
+      items: (itemsByRecord[id] || []).sort(function(a, b) { return a.line - b.line; })
+    };
+  }).filter(function(record) {
+    return record.id && record.lpoNumber;
+  }).sort(function(a, b) {
+    return String(b.updatedAt).localeCompare(String(a.updatedAt));
+  });
+}
+
 function lpoNumberExists_(sheet, lpoNumber) {
   if (sheet.getLastRow() < 2) return false;
   return Boolean(sheet.getRange(2, 2, sheet.getLastRow() - 1, 1)
@@ -97,7 +173,8 @@ function nextLpoNumber_(existingMaster) {
     'Quotation Reference', 'Subject', 'Purchase Type', 'Currency',
     'VAT Applicable', 'Subtotal', 'VAT Amount', 'Net Total', 'Amount in Words',
     'Payment Terms', 'Ordered & Checked By', 'Second Signatory Name', 'Finance Manager',
-    'Last Updated', 'Second Signatory Role'
+    'Last Updated', 'Second Signatory Role', 'Ordered Signature',
+    'Second Signatory Signature', 'Finance Signature'
   ]);
   let highest = 260;
   if (master.getLastRow() > 1) {
