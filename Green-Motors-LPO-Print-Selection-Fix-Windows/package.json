@@ -1,0 +1,12 @@
+{
+  "name": "green-motors-lpo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Green Motors Local Purchase Order application",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
