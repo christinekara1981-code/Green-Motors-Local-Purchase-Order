@@ -2310,6 +2310,43 @@ textarea {
   }
 }
 
+@media print {
+  /* FINAL_BALANCED_PRINT_PAGES_V21: avoid orphan overflow pages and use more rows on headed continuation pages. */
+  body.print-paginated .print-page {
+    min-height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    page-break-after: always !important;
+    break-after: page !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  body.print-paginated .print-page:last-child {
+    page-break-after: auto !important;
+    break-after: auto !important;
+  }
+
+  body.print-paginated .print-page .items-table tr {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  body.print-paginated .print-page .items-table td {
+    height: 15mm !important;
+    padding: 1.4mm !important;
+  }
+
+  body.print-paginated .print-page .items-table .item-code {
+    height: 6.5mm !important;
+    margin-bottom: 1mm !important;
+  }
+
+  body.print-paginated .print-page .items-table .description {
+    height: 9mm !important;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -2317,7 +2354,7 @@ textarea {
     <div>
       <strong>Green Motors LPO</strong>
       <span id="saveStatus">Ready</span>
-      <span class="build-version">Build 2026.07.16.20</span>
+      <span class="build-version">Build 2026.07.16.21</span>
     </div>
     <div class="toolbar">
       <button id="newBtn" class="secondary">New</button>
@@ -3082,8 +3119,8 @@ function buildPrintPages() {
   const output = document.createElement("div");
   output.className = "print-output";
   const rows = Array.from(itemsBody.rows);
-  const firstPageRows = 4;
-  const continuationRows = 5;
+  const firstPageRows = 3;
+  const continuationRows = 8;
 
   const firstPage = makePrintPage();
   firstPage.content.append(cloneForPrint(document.querySelector(".info-grid")));
