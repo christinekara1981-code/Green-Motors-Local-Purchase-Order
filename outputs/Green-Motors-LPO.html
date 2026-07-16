@@ -2217,6 +2217,99 @@ textarea {
   }
 }
 
+@media print {
+  /* FINAL_LETTER_SAFE_A4_PRINT_V20: do not force 297mm height, because Letter printers split it into headerless even pages. */
+  @page {
+    size: A4 portrait;
+    margin: 0;
+  }
+
+  html,
+  body,
+  body.print-paginated .print-output {
+    width: 210mm !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+    overflow: visible !important;
+  }
+
+  body.print-paginated .workspace {
+    display: none !important;
+  }
+
+  body.print-paginated .print-page {
+    display: block !important;
+    width: 198mm !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    margin: 0 auto !important;
+    padding: 12mm 5mm 8mm !important;
+    box-sizing: border-box !important;
+    background: #fff !important;
+    overflow: visible !important;
+    page-break-before: auto !important;
+    page-break-after: always !important;
+    page-break-inside: avoid !important;
+    break-before: auto !important;
+    break-after: page !important;
+    break-inside: avoid !important;
+  }
+
+  body.print-paginated .print-page:last-child {
+    page-break-after: auto !important;
+    break-after: auto !important;
+  }
+
+  body.print-paginated .print-page .letterhead {
+    display: grid !important;
+    position: static !important;
+    grid-template-columns: 31% 1fr !important;
+    align-items: center !important;
+    gap: 7mm !important;
+    width: 100% !important;
+    margin: 0 0 7mm !important;
+    padding: 0 0 4mm !important;
+    border-bottom: 3px solid var(--green) !important;
+    background: #fff !important;
+  }
+
+  body.print-paginated .print-page .letterhead img {
+    width: 40mm !important;
+    max-width: 40mm !important;
+    height: 17mm !important;
+    justify-self: center !important;
+    object-fit: contain !important;
+  }
+
+  body.print-paginated .print-page .letterhead h1 {
+    margin: 0 0 2.5mm !important;
+    font-size: 17pt !important;
+    line-height: 1.05 !important;
+  }
+
+  body.print-paginated .print-page .letterhead p {
+    margin: 1mm 0 !important;
+    font-size: 8.5pt !important;
+    line-height: 1.15 !important;
+  }
+
+  body.print-paginated .print-page .items-table td {
+    height: 16mm !important;
+    padding: 1.6mm !important;
+  }
+
+  body.print-paginated .print-page .items-table .item-code {
+    height: 7mm !important;
+    margin-bottom: 1mm !important;
+  }
+
+  body.print-paginated .print-page .items-table .description {
+    height: 10mm !important;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -2224,7 +2317,7 @@ textarea {
     <div>
       <strong>Green Motors LPO</strong>
       <span id="saveStatus">Ready</span>
-      <span class="build-version">Build 2026.07.16.19</span>
+      <span class="build-version">Build 2026.07.16.20</span>
     </div>
     <div class="toolbar">
       <button id="newBtn" class="secondary">New</button>
@@ -2990,7 +3083,7 @@ function buildPrintPages() {
   output.className = "print-output";
   const rows = Array.from(itemsBody.rows);
   const firstPageRows = 4;
-  const continuationRows = 6;
+  const continuationRows = 5;
 
   const firstPage = makePrintPage();
   firstPage.content.append(cloneForPrint(document.querySelector(".info-grid")));
