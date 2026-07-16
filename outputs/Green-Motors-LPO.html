@@ -2142,6 +2142,39 @@ textarea {
   }
 }
 
+@media print {
+  /* FINAL_TOTAL_COLUMN_PRINT_V18: the Action column is removed before printing, so Total becomes last column and must stay visible. */
+  body.print-paginated .print-page .items-table .col-action,
+  body.print-paginated .print-page .items-table .no-print {
+    display: none !important;
+    width: 0 !important;
+  }
+
+  body.print-paginated .print-page .items-table th:last-child,
+  body.print-paginated .print-page .items-table td:last-child,
+  body.print-paginated .print-page .items-table th:nth-child(6),
+  body.print-paginated .print-page .items-table td:nth-child(6) {
+    display: table-cell !important;
+    visibility: visible !important;
+  }
+
+  body.print-paginated .print-page .items-table .col-serial { width: 6% !important; }
+  body.print-paginated .print-page .items-table .col-description { width: 41% !important; }
+  body.print-paginated .print-page .items-table .col-qty { width: 8% !important; }
+  body.print-paginated .print-page .items-table .col-uom { width: 13% !important; }
+  body.print-paginated .print-page .items-table .col-unit-price { width: 14% !important; }
+  body.print-paginated .print-page .items-table .col-line-total { width: 18% !important; }
+
+  body.print-paginated .print-page .items-table td:nth-child(6),
+  body.print-paginated .print-page .line-total {
+    min-width: 0 !important;
+    padding-right: 6px !important;
+    text-align: right !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -2149,7 +2182,7 @@ textarea {
     <div>
       <strong>Green Motors LPO</strong>
       <span id="saveStatus">Ready</span>
-      <span class="build-version">Build 2026.07.16.17</span>
+      <span class="build-version">Build 2026.07.16.18</span>
     </div>
     <div class="toolbar">
       <button id="newBtn" class="secondary">New</button>
