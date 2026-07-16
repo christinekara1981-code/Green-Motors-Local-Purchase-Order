@@ -576,6 +576,14 @@ dialog menu { display: flex; justify-content: flex-end; gap: 8px; padding: 15px 
 }
 
 @media print {
+  /* Keep item pages tight; do not add artificial blank space at the bottom. */
+  .print-page {
+    min-height: auto !important;
+    padding-bottom: 36px !important;
+  }
+}
+
+@media print {
   body.print-paginated {
     background: #edf0ed !important;
     -webkit-print-color-adjust: exact !important;
@@ -709,7 +717,7 @@ dialog menu { display: flex; justify-content: flex-end; gap: 8px; padding: 15px 
     <div>
       <strong>Green Motors LPO</strong>
       <span id="saveStatus">Ready</span>
-      <span class="build-version">Build 2026.07.16.7</span>
+      <span class="build-version">Build 2026.07.16.8</span>
     </div>
     <div class="toolbar">
       <button id="newBtn" class="secondary">New</button>
@@ -1474,8 +1482,8 @@ function buildPrintPages() {
   const output = document.createElement("div");
   output.className = "print-output";
   const rows = Array.from(itemsBody.rows);
-  const chunks = [rows.slice(0, 5)];
-  for (let index = 5; index < rows.length; index += 6) chunks.push(rows.slice(index, index + 6));
+  const chunks = [rows.slice(0, 7)];
+  for (let index = 7; index < rows.length; index += 8) chunks.push(rows.slice(index, index + 8));
   if (!chunks.length) chunks.push([]);
   chunks.forEach((chunk, pageIndex) => {
     const isFirstPage = pageIndex === 0;
