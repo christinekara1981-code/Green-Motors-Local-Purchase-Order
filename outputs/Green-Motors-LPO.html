@@ -538,12 +538,14 @@ dialog menu { display: flex; justify-content: flex-end; gap: 8px; padding: 15px 
   body.print-paginated .print-output { display: block !important; }
   .print-page {
     width: 960px;
-    min-height: 1320px;
+    min-height: 1260px;
     margin: 0 auto;
     padding: 36px 42px;
     background: #fff;
     page-break-after: always;
     break-after: page;
+    page-break-inside: avoid;
+    break-inside: avoid;
     zoom: .68;
   }
   .print-page:last-child { page-break-after: auto; break-after: auto; }
@@ -567,6 +569,9 @@ dialog menu { display: flex; justify-content: flex-end; gap: 8px; padding: 15px 
   .print-page input:read-only { background: #f0f3f0; }
   .print-page .item-code { display: block; width: 100%; margin: 0 0 5px !important; }
   .print-page .description { display: block; width: 100%; }
+  .print-page .totals { margin-top: 18px; }
+  .print-page .terms { margin-top: 24px; }
+  .print-page .signatures { margin-top: 28px; }
   .print-signature-image { width: 100%; height: 92px; margin-top: 7px; border: 1px dashed #777; object-fit: contain; }
 }
 
@@ -704,7 +709,7 @@ dialog menu { display: flex; justify-content: flex-end; gap: 8px; padding: 15px 
     <div>
       <strong>Green Motors LPO</strong>
       <span id="saveStatus">Ready</span>
-      <span class="build-version">Build 2026.07.16.6</span>
+      <span class="build-version">Build 2026.07.16.7</span>
     </div>
     <div class="toolbar">
       <button id="newBtn" class="secondary">New</button>
@@ -1469,25 +1474,24 @@ function buildPrintPages() {
   const output = document.createElement("div");
   output.className = "print-output";
   const rows = Array.from(itemsBody.rows);
-  const chunks = [rows.slice(0, 6)];
-  for (let index = 6; index < rows.length; index += 8) chunks.push(rows.slice(index, index + 8));
+  const chunks = [rows.slice(0, 5)];
+  for (let index = 5; index < rows.length; index += 6) chunks.push(rows.slice(index, index + 6));
   if (!chunks.length) chunks.push([]);
   chunks.forEach((chunk, pageIndex) => {
     const isFirstPage = pageIndex === 0;
-    const isLastPage = pageIndex === chunks.length - 1;
     const { page, content } = makePrintPage();
     if (isFirstPage) {
       content.append(cloneForPrint(document.querySelector(".info-grid")));
       document.querySelectorAll(".print-page-body > p").forEach(paragraph => content.append(cloneForPrint(paragraph)));
     }
     content.append(makePrintItemsTable(chunk));
-    if (isLastPage) {
-      content.append(cloneForPrint(document.querySelector(".totals")));
-      content.append(cloneForPrint(document.querySelector(".terms")));
-      content.append(cloneForPrint(document.querySelector(".signatures")));
-    }
     output.append(page);
   });
+  const summaryPage = makePrintPage();
+  summaryPage.content.append(cloneForPrint(document.querySelector(".totals")));
+  summaryPage.content.append(cloneForPrint(document.querySelector(".terms")));
+  summaryPage.content.append(cloneForPrint(document.querySelector(".signatures")));
+  output.append(summaryPage.page);
   document.body.append(output);
   document.body.classList.add("print-paginated");
 }
