@@ -2175,6 +2175,48 @@ textarea {
   }
 }
 
+@media print {
+  /* FINAL_NO_OVERFLOW_PAGES_V19: every physical print page is an actual generated A4 page with its own header. */
+  body.print-paginated .print-page {
+    display: block !important;
+    width: 210mm !important;
+    min-height: 297mm !important;
+    max-height: 297mm !important;
+    margin: 0 !important;
+    padding: 15mm 6mm 10mm !important;
+    box-sizing: border-box !important;
+    background: #fff !important;
+    overflow: hidden !important;
+    page-break-before: auto !important;
+    page-break-after: always !important;
+    page-break-inside: avoid !important;
+    break-before: auto !important;
+    break-after: page !important;
+    break-inside: avoid !important;
+  }
+
+  body.print-paginated .print-page:last-child {
+    page-break-after: auto !important;
+    break-after: auto !important;
+  }
+
+  body.print-paginated .print-page .letterhead {
+    display: grid !important;
+    position: static !important;
+    margin-top: 0 !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  body.print-paginated .print-page .items-table tr,
+  body.print-paginated .print-page .totals,
+  body.print-paginated .print-page .terms,
+  body.print-paginated .print-page .signatures {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -2182,7 +2224,7 @@ textarea {
     <div>
       <strong>Green Motors LPO</strong>
       <span id="saveStatus">Ready</span>
-      <span class="build-version">Build 2026.07.16.18</span>
+      <span class="build-version">Build 2026.07.16.19</span>
     </div>
     <div class="toolbar">
       <button id="newBtn" class="secondary">New</button>
@@ -2947,25 +2989,26 @@ function buildPrintPages() {
   const output = document.createElement("div");
   output.className = "print-output";
   const rows = Array.from(itemsBody.rows);
-  const chunks = [rows.slice(0, 7)];
-  for (let index = 7; index < rows.length; index += 7) chunks.push(rows.slice(index, index + 7));
-  if (!chunks.length) chunks.push([]);
-  chunks.forEach((chunk, pageIndex) => {
-    const isFirstPage = pageIndex === 0;
-    const isLastPage = pageIndex === chunks.length - 1;
-    const { page, content } = makePrintPage();
-    if (isFirstPage) {
-      content.append(cloneForPrint(document.querySelector(".info-grid")));
-      document.querySelectorAll(".print-page-body > p").forEach(paragraph => content.append(cloneForPrint(paragraph)));
-    }
-    content.append(makePrintItemsTable(chunk));
-    if (isLastPage) {
-      content.append(cloneForPrint(document.querySelector(".totals")));
-      content.append(cloneForPrint(document.querySelector(".terms")));
-      content.append(cloneForPrint(document.querySelector(".signatures")));
-    }
-    output.append(page);
-  });
+  const firstPageRows = 4;
+  const continuationRows = 6;
+
+  const firstPage = makePrintPage();
+  firstPage.content.append(cloneForPrint(document.querySelector(".info-grid")));
+  document.querySelectorAll(".print-page-body > p").forEach(paragraph => firstPage.content.append(cloneForPrint(paragraph)));
+  firstPage.content.append(makePrintItemsTable(rows.slice(0, firstPageRows)));
+  output.append(firstPage.page);
+
+  for (let index = firstPageRows; index < rows.length; index += continuationRows) {
+    const itemPage = makePrintPage();
+    itemPage.content.append(makePrintItemsTable(rows.slice(index, index + continuationRows)));
+    output.append(itemPage.page);
+  }
+
+  const summaryPage = makePrintPage();
+  summaryPage.content.append(cloneForPrint(document.querySelector(".totals")));
+  summaryPage.content.append(cloneForPrint(document.querySelector(".terms")));
+  summaryPage.content.append(cloneForPrint(document.querySelector(".signatures")));
+  output.append(summaryPage.page);
   document.body.append(output);
   document.body.classList.add("print-paginated");
 }
