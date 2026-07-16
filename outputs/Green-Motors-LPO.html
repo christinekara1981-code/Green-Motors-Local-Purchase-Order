@@ -775,6 +775,81 @@ dialog menu { display: flex; justify-content: flex-end; gap: 8px; padding: 15px 
   }
 }
 
+@media print {
+  /* FINAL_DIRECT_PRINT_V10: print the real LPO table directly, no generated pages or gaps. */
+  body.print-paginated .print-output,
+  .print-output {
+    display: none !important;
+  }
+  body.print-paginated .workspace,
+  .workspace {
+    display: block !important;
+    padding: 0 !important;
+    background: #fff !important;
+  }
+  .paper,
+  .paper.standard-page-print,
+  .paper.compact-page-print {
+    width: 100% !important;
+    max-width: none !important;
+    padding: 0 !important;
+    background: #fff !important;
+    box-shadow: none !important;
+    zoom: .92 !important;
+  }
+  .table-wrap {
+    width: 100% !important;
+    overflow: visible !important;
+  }
+  .items-table {
+    width: 100% !important;
+    table-layout: fixed !important;
+  }
+  .items-table thead {
+    display: table-header-group !important;
+  }
+  .items-table tr {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+  .items-table .col-serial { width: 6% !important; }
+  .items-table .col-description { width: 40% !important; }
+  .items-table .col-qty { width: 8% !important; }
+  .items-table .col-uom { width: 13% !important; }
+  .items-table .col-unit-price { width: 14% !important; }
+  .items-table .col-line-total { width: 19% !important; }
+  .items-table .col-action { display: none !important; width: 0 !important; }
+  .items-table th,
+  .items-table td {
+    overflow: visible !important;
+    padding: 5px !important;
+    font-size: 11px !important;
+  }
+  .items-table th:last-child,
+  .items-table td:last-child {
+    display: none !important;
+  }
+  .items-table td:nth-child(5),
+  .items-table td:nth-child(6),
+  .line-total {
+    text-align: right !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+    padding-right: 8px !important;
+  }
+  .items-table input,
+  .items-table select,
+  .items-table textarea {
+    padding: 4px !important;
+    font-size: 11px !important;
+    line-height: 1.25 !important;
+  }
+  .item-code,
+  .description {
+    width: 100% !important;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -782,7 +857,7 @@ dialog menu { display: flex; justify-content: flex-end; gap: 8px; padding: 15px 
     <div>
       <strong>Green Motors LPO</strong>
       <span id="saveStatus">Ready</span>
-      <span class="build-version">Build 2026.07.16.9</span>
+      <span class="build-version">Build 2026.07.16.10</span>
     </div>
     <div class="toolbar">
       <button id="newBtn" class="secondary">New</button>
@@ -1600,11 +1675,9 @@ window.addEventListener("beforeprint", () => {
   const itemCount = itemsBody.rows.length;
   form.classList.toggle("standard-page-print", itemCount <= 10);
   form.classList.toggle("compact-page-print", itemCount > 10 && itemCount <= 20);
-  buildPrintPages();
 });
 window.addEventListener("afterprint", () => {
   form.classList.remove("standard-page-print", "compact-page-print");
-  clearPrintPages();
 });
 document.querySelector("#settingsBtn").addEventListener("click", () => {
   document.querySelector("#webAppUrl").value = settings().webAppUrl || "";
