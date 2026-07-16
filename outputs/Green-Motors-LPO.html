@@ -710,6 +710,71 @@ dialog menu { display: flex; justify-content: flex-end; gap: 8px; padding: 15px 
   }
 }
 
+@media print {
+  /* FINAL_PRINT_LAYOUT_V9: last rule wins for paginated print pages. */
+  body.print-paginated .print-page {
+    width: 960px !important;
+    min-height: auto !important;
+    margin: 0 auto !important;
+    padding: 30px 36px !important;
+    background: #fff !important;
+    page-break-after: always !important;
+    break-after: page !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    zoom: .70 !important;
+  }
+  body.print-paginated .print-page:last-child {
+    page-break-after: auto !important;
+    break-after: auto !important;
+  }
+  body.print-paginated .print-page .letterhead {
+    display: grid !important;
+    grid-template-columns: 220px 1fr !important;
+    gap: 24px !important;
+    margin: 0 0 18px !important;
+    padding: 0 0 14px !important;
+    border-bottom: 4px solid var(--green) !important;
+  }
+  body.print-paginated .print-page .letterhead img {
+    width: 100% !important;
+    height: 82px !important;
+    object-fit: contain !important;
+  }
+  body.print-paginated .print-page .items-table {
+    width: 100% !important;
+    table-layout: fixed !important;
+  }
+  body.print-paginated .print-page .items-table .col-serial { width: 6% !important; }
+  body.print-paginated .print-page .items-table .col-description { width: 42% !important; }
+  body.print-paginated .print-page .items-table .col-qty { width: 8% !important; }
+  body.print-paginated .print-page .items-table .col-uom { width: 14% !important; }
+  body.print-paginated .print-page .items-table .col-unit-price { width: 14% !important; }
+  body.print-paginated .print-page .items-table .col-line-total { width: 16% !important; }
+  body.print-paginated .print-page .items-table .col-action { display: none !important; width: 0 !important; }
+  body.print-paginated .print-page .items-table th,
+  body.print-paginated .print-page .items-table td {
+    overflow: visible !important;
+    padding: 6px !important;
+    font-size: 13px !important;
+  }
+  body.print-paginated .print-page .items-table td:nth-child(5),
+  body.print-paginated .print-page .items-table td:nth-child(6),
+  body.print-paginated .print-page .line-total {
+    min-width: 0 !important;
+    padding-right: 8px !important;
+    text-align: right !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+  }
+  body.print-paginated .print-page .items-table input,
+  body.print-paginated .print-page .items-table select,
+  body.print-paginated .print-page .items-table textarea {
+    padding: 6px !important;
+    font-size: 13px !important;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -717,7 +782,7 @@ dialog menu { display: flex; justify-content: flex-end; gap: 8px; padding: 15px 
     <div>
       <strong>Green Motors LPO</strong>
       <span id="saveStatus">Ready</span>
-      <span class="build-version">Build 2026.07.16.8</span>
+      <span class="build-version">Build 2026.07.16.9</span>
     </div>
     <div class="toolbar">
       <button id="newBtn" class="secondary">New</button>
