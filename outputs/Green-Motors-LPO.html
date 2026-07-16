@@ -1094,6 +1094,204 @@ dialog menu { display: flex; justify-content: flex-end; gap: 8px; padding: 15px 
   }
 }
 
+@media print {
+  /* FINAL_REPEAT_HEADER_MARGIN_PRINT_V14: repeat Green Motors letterhead and indent every printed page. */
+  @page {
+    size: A4 portrait;
+    margin: 39mm 17mm 14mm 17mm;
+  }
+
+  html,
+  body {
+    width: auto !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+    overflow: visible !important;
+  }
+
+  body {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  body.print-paginated .workspace,
+  .workspace {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+    background: #fff !important;
+    overflow: visible !important;
+    box-sizing: border-box !important;
+  }
+
+  .paper,
+  .paper.standard-page-print,
+  .paper.compact-page-print {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+    background: #fff !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+    transform: none !important;
+    zoom: 1 !important;
+    box-sizing: border-box !important;
+  }
+
+  .print-page-table,
+  .print-page-body {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .print-page-header {
+    display: block !important;
+  }
+
+  .letterhead,
+  .standard-page-print .letterhead,
+  .compact-page-print .letterhead {
+    position: fixed !important;
+    top: 8mm !important;
+    left: 17mm !important;
+    right: 17mm !important;
+    z-index: 10 !important;
+    display: grid !important;
+    grid-template-columns: 25% 1fr !important;
+    align-items: center !important;
+    gap: 16px !important;
+    width: auto !important;
+    max-width: none !important;
+    height: 25mm !important;
+    margin: 0 !important;
+    padding: 0 0 7mm !important;
+    background: #fff !important;
+    border-bottom: 4px solid var(--green) !important;
+    box-sizing: border-box !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  .letterhead img {
+    width: 100% !important;
+    max-width: 150px !important;
+    height: 58px !important;
+    object-fit: contain !important;
+  }
+
+  .letterhead h1 {
+    margin: 0 0 4px !important;
+    font-size: 22px !important;
+    line-height: 1.1 !important;
+    color: var(--green-dark) !important;
+  }
+
+  .letterhead p {
+    margin: 2px 0 !important;
+    font-size: 12px !important;
+    line-height: 1.25 !important;
+    color: var(--gray) !important;
+  }
+
+  .info-grid,
+  .section,
+  .table-wrap,
+  .totals-grid,
+  .terms,
+  .signature-section {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  .info-grid {
+    margin-top: 0 !important;
+    margin-bottom: 12px !important;
+    gap: 10px 18px !important;
+  }
+
+  .table-wrap {
+    margin-top: 8px !important;
+    margin-bottom: 10px !important;
+    overflow: visible !important;
+  }
+
+  .items-table {
+    width: 100% !important;
+    max-width: 100% !important;
+    table-layout: fixed !important;
+    border-collapse: collapse !important;
+    box-sizing: border-box !important;
+  }
+
+  .items-table thead {
+    display: table-header-group !important;
+  }
+
+  .items-table tr {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  .items-table .col-serial { width: 6% !important; }
+  .items-table .col-description { width: 42% !important; }
+  .items-table .col-qty { width: 8% !important; }
+  .items-table .col-uom { width: 13% !important; }
+  .items-table .col-unit-price { width: 14% !important; }
+  .items-table .col-line-total { width: 17% !important; }
+
+  .items-table th,
+  .items-table td {
+    box-sizing: border-box !important;
+    padding: 5px !important;
+    font-size: 11.5px !important;
+    line-height: 1.25 !important;
+    overflow: visible !important;
+  }
+
+  .items-table input,
+  .items-table select,
+  .items-table textarea {
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    padding: 4px !important;
+    font-size: 11.5px !important;
+    line-height: 1.25 !important;
+  }
+
+  .items-table td:nth-child(5),
+  .items-table td:nth-child(6),
+  .line-total {
+    padding-right: 7px !important;
+    text-align: right !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+  }
+
+  .totals-grid {
+    margin-top: 10px !important;
+    gap: 10px !important;
+  }
+
+  .terms {
+    margin-top: 14px !important;
+  }
+
+  .signature-section {
+    margin-top: 16px !important;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -1101,7 +1299,7 @@ dialog menu { display: flex; justify-content: flex-end; gap: 8px; padding: 15px 
     <div>
       <strong>Green Motors LPO</strong>
       <span id="saveStatus">Ready</span>
-      <span class="build-version">Build 2026.07.16.13</span>
+      <span class="build-version">Build 2026.07.16.14</span>
     </div>
     <div class="toolbar">
       <button id="newBtn" class="secondary">New</button>
