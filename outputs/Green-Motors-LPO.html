@@ -1011,6 +1011,89 @@ dialog menu { display: flex; justify-content: flex-end; gap: 8px; padding: 15px 
   }
 }
 
+@media print {
+  /* FINAL_A4_INDENT_PRINT_V13: add visible in-page indentation even when print dialog margins are set to none. */
+  @page {
+    size: A4 portrait;
+    margin: 10mm 10mm 10mm;
+  }
+
+  body.print-paginated .workspace,
+  .workspace {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+    background: #fff !important;
+    box-sizing: border-box !important;
+  }
+
+  .paper,
+  .paper.standard-page-print,
+  .paper.compact-page-print {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+    padding: 6mm 13mm 8mm !important;
+    box-sizing: border-box !important;
+    background: #fff !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+    transform: none !important;
+    zoom: .94 !important;
+  }
+
+  .letterhead,
+  .standard-page-print .letterhead,
+  .compact-page-print .letterhead,
+  .info-grid,
+  .section,
+  .table-wrap,
+  .totals-grid,
+  .terms,
+  .signature-section {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .letterhead,
+  .standard-page-print .letterhead,
+  .compact-page-print .letterhead {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  .items-table {
+    width: 100% !important;
+    max-width: 100% !important;
+    table-layout: fixed !important;
+    box-sizing: border-box !important;
+  }
+
+  .items-table .col-serial { width: 6% !important; }
+  .items-table .col-description { width: 42% !important; }
+  .items-table .col-qty { width: 8% !important; }
+  .items-table .col-uom { width: 13% !important; }
+  .items-table .col-unit-price { width: 14% !important; }
+  .items-table .col-line-total { width: 17% !important; }
+
+  .items-table th,
+  .items-table td {
+    box-sizing: border-box !important;
+    padding-left: 5px !important;
+    padding-right: 5px !important;
+  }
+
+  .items-table td:nth-child(6),
+  .line-total {
+    padding-right: 7px !important;
+    text-align: right !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -1018,7 +1101,7 @@ dialog menu { display: flex; justify-content: flex-end; gap: 8px; padding: 15px 
     <div>
       <strong>Green Motors LPO</strong>
       <span id="saveStatus">Ready</span>
-      <span class="build-version">Build 2026.07.16.12</span>
+      <span class="build-version">Build 2026.07.16.13</span>
     </div>
     <div class="toolbar">
       <button id="newBtn" class="secondary">New</button>
