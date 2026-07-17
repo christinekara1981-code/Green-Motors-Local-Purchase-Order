@@ -366,6 +366,29 @@ textarea {
   gap: 5mm;
 }
 
+/* Supplier detail block spacing. */
+.info-grid {
+  gap: 3.5mm 7mm;
+  margin: 0 0 4.5mm;
+}
+
+.info-grid label {
+  margin: 0;
+}
+
+.info-grid input,
+.info-grid select {
+  min-height: 10.5mm;
+  margin-top: 1.5mm;
+  padding: 2mm 3mm;
+}
+
+.info-grid textarea {
+  min-height: 15mm;
+  margin-top: 1.5mm;
+  padding: 2mm 3mm;
+}
+
 @media (max-width: 1000px) {
   .workspace { grid-template-columns: 1fr; }
   .records-panel { position: static; }
@@ -2347,6 +2370,47 @@ textarea {
   }
 }
 
+/* SUPPLIER_FIELDS_LAYOUT_V22: final spacing for Supplier Code / TRN detail block. */
+.info-grid {
+  gap: 3.5mm 7mm !important;
+  margin: 0 0 4.5mm !important;
+}
+
+.info-grid label {
+  margin: 0 !important;
+}
+
+.info-grid input,
+.info-grid select {
+  min-height: 10.5mm !important;
+  margin-top: 1.5mm !important;
+  padding: 2mm 3mm !important;
+}
+
+.info-grid textarea {
+  min-height: 15mm !important;
+  margin-top: 1.5mm !important;
+  padding: 2mm 3mm !important;
+}
+
+@media print {
+  body.print-paginated .print-page .info-grid {
+    gap: 3.5mm 7mm !important;
+    margin: 0 0 4.5mm !important;
+  }
+
+  body.print-paginated .print-page .info-grid input,
+  body.print-paginated .print-page .info-grid select {
+    height: 10.5mm !important;
+    min-height: 10.5mm !important;
+  }
+
+  body.print-paginated .print-page .info-grid textarea {
+    height: 15mm !important;
+    min-height: 15mm !important;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -2354,7 +2418,7 @@ textarea {
     <div>
       <strong>Green Motors LPO</strong>
       <span id="saveStatus">Ready</span>
-      <span class="build-version">Build 2026.07.16.21</span>
+      <span class="build-version">Build 2026.07.17.01</span>
     </div>
     <div class="toolbar">
       <button id="newBtn" class="secondary">New</button>
@@ -2389,23 +2453,29 @@ textarea {
         <div class="print-page-body">
 
       <section class="info-grid">
-        <label>Supplier
-          <input name="supplier" required>
+        <label>Supplier Code
+          <input name="supplierCode" id="supplierCode" list="supplierOptions" autocomplete="off">
         </label>
         <label>LPO Number
           <input name="lpoNumber" readonly>
         </label>
-        <label>PO Box
-          <input name="poBox">
+        <label>Supplier
+          <input name="supplier" id="supplierName" list="supplierOptions" autocomplete="off" required>
         </label>
         <label>Date
           <input name="date" type="date" required>
         </label>
-        <label>Address
-          <textarea name="address" rows="2"></textarea>
+        <label>PO Box
+          <input name="poBox">
         </label>
         <label>Quotation Reference No.
           <input name="quotationReference">
+        </label>
+        <label>Address
+          <textarea name="address" rows="2"></textarea>
+        </label>
+        <label>TRN
+          <input name="trn">
         </label>
         <label class="wide">Subject
           <input name="subject" required>
@@ -2421,6 +2491,7 @@ textarea {
           VAT applicable (5%)
         </label>
       </section>
+      <datalist id="supplierOptions"></datalist>
 
       <p>Dear Sir,</p>
       <p>Reference to the subject, we would like to confirm our order as follows:</p>
@@ -2596,6 +2667,7 @@ const settingsDialog = document.querySelector("#settingsDialog");
 let currentId = null;
 let isLocked = false;
 let signatures = { ordered: "", hr: "", finance: "" };
+let supplierMaster = [];
 
 async function checkHostedConfiguration() {
   if (!isHostedApp()) return;
@@ -2624,6 +2696,10 @@ function storeRecords(value) {
 function settings() {
   try { return JSON.parse(localStorage.getItem(SETTINGS_KEY)) || {}; }
   catch { return {}; }
+}
+
+function normalizeKey(value) {
+  return String(value || "").trim().toLowerCase();
 }
 
 function nextNumberValue() {
@@ -2781,10 +2857,12 @@ function collectRecord() {
     id: currentId || crypto.randomUUID(),
     lpoNumber: fields.lpoNumber.value,
     date: fields.date.value,
+    supplierCode: fields.supplierCode.value.trim(),
     supplier: fields.supplier.value.trim(),
     poBox: fields.poBox.value.trim(),
     address: fields.address.value.trim(),
     quotationReference: fields.quotationReference.value.trim(),
+    trn: fields.trn.value.trim(),
     subject: fields.subject.value.trim(),
     purchaseType: fields.purchaseType.value,
     vatApplicable: fields.vatApplicable.checked,
@@ -2921,6 +2999,56 @@ async function loadSharedRecords() {
   }
 }
 
+function renderSupplierOptions() {
+  const datalist = document.querySelector("#supplierOptions");
+  if (!datalist) return;
+  datalist.innerHTML = "";
+  supplierMaster.forEach(supplier => {
+    if (supplier.supplierCode) datalist.append(new Option(`${supplier.supplierCode} - ${supplier.supplier || ""}`, supplier.supplierCode));
+    if (supplier.supplier) datalist.append(new Option(`${supplier.supplier}${supplier.supplierCode ? ` - ${supplier.supplierCode}` : ""}`, supplier.supplier));
+  });
+}
+
+function applySupplierMatch(value) {
+  const key = normalizeKey(value);
+  if (!key) return;
+  const match = supplierMaster.find(supplier =>
+    normalizeKey(supplier.supplierCode) === key ||
+    normalizeKey(supplier.supplier) === key ||
+    normalizeKey(`${supplier.supplierCode} - ${supplier.supplier}`) === key ||
+    normalizeKey(`${supplier.supplier} - ${supplier.supplierCode}`) === key
+  );
+  if (!match) return;
+  fields.supplierCode.value = match.supplierCode || "";
+  fields.supplier.value = match.supplier || "";
+  fields.poBox.value = match.poBox || "";
+  fields.address.value = match.address || "";
+  fields.trn.value = match.trn || "";
+}
+
+async function loadSupplierMaster() {
+  try {
+    let result;
+    if (isHostedApp()) {
+      const response = await fetch("/api/suppliers", { cache: "no-store" });
+      result = await response.json();
+      if (!response.ok || result.ok === false) throw new Error(result.error || "Unable to load supplier master.");
+    } else {
+      const url = settings().webAppUrl;
+      if (!url) return;
+      const response = await fetch(`${url}${url.includes("?") ? "&" : "?"}action=list-suppliers`, { cache: "no-store" });
+      result = await response.json();
+      if (result.ok === false) throw new Error(result.error || "Unable to load supplier master.");
+    }
+    supplierMaster = Array.isArray(result.suppliers) ? result.suppliers : [];
+    renderSupplierOptions();
+    if (supplierMaster.length) setStatus(`Loaded ${supplierMaster.length} supplier records`);
+  } catch (error) {
+    console.error(error);
+    setStatus("Supplier Master not loaded", true);
+  }
+}
+
 function clearForm() {
   currentId = null;
   form.reset();
@@ -2943,7 +3071,7 @@ function loadRecord(id) {
   const record = records().find(entry => entry.id === id);
   if (!record) return;
   currentId = record.id;
-  ["lpoNumber", "date", "supplier", "poBox", "address", "quotationReference", "subject",
+  ["lpoNumber", "date", "supplierCode", "supplier", "poBox", "address", "quotationReference", "trn", "subject",
     "purchaseType", "paymentTerms", "orderedName", "hrName", "financeName"].forEach(name => {
       form.elements[name].value = record[name] || "";
     });
@@ -2991,12 +3119,12 @@ function renderRecordList() {
   const list = document.querySelector("#recordList");
   list.innerHTML = "";
   records().filter(record =>
-    !query || `${record.lpoNumber} ${record.supplier} ${record.quotationReference}`.toLowerCase().includes(query)
+    !query || `${record.lpoNumber} ${record.supplierCode || ""} ${record.supplier} ${record.quotationReference}`.toLowerCase().includes(query)
   ).forEach(record => {
     const button = document.createElement("button");
     button.type = "button";
     button.className = `record${record.id === currentId ? " active" : ""}`;
-    button.innerHTML = `${escapeHtml(record.lpoNumber)}<span>${escapeHtml(record.supplier || "No supplier")} · ${escapeHtml(record.date || "")}</span>`;
+    button.innerHTML = `${escapeHtml(record.lpoNumber)}<span>${escapeHtml(record.supplierCode || "")}${record.supplierCode ? " · " : ""}${escapeHtml(record.supplier || "No supplier")} · ${escapeHtml(record.date || "")}</span>`;
     button.addEventListener("click", () => loadRecord(record.id));
     list.append(button);
   });
@@ -3170,6 +3298,8 @@ document.querySelector("#recordSearch").addEventListener("input", renderRecordLi
 fields.purchaseType.addEventListener("change", setPurchaseRules);
 fields.vatApplicable.addEventListener("change", calculate);
 fields.secondSignatoryRole.addEventListener("change", setSignatoryRules);
+fields.supplierCode.addEventListener("change", event => applySupplierMatch(event.target.value));
+fields.supplier.addEventListener("change", event => applySupplierMatch(event.target.value));
 window.addEventListener("beforeprint", () => {
   buildPrintPages();
   const itemCount = itemsBody.rows.length;
@@ -3208,6 +3338,7 @@ document.querySelector("#saveSettingsBtn").addEventListener("click", async event
 document.querySelectorAll(".signature-card").forEach(prepareCanvas);
 clearForm();
 loadSharedRecords();
+loadSupplierMaster();
 checkHostedConfiguration();
 if (!isHostedApp() && !settings().webAppUrl) {
   setStatus("Google Sheets not connected - open Settings", true);
