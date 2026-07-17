@@ -6,7 +6,12 @@ const path = require("path");
 
 const port = Number(process.env.PORT || 3000);
 const publicDir = path.join(__dirname, "outputs");
-const googleAppsScriptUrl = (process.env.GOOGLE_APPS_SCRIPT_URL || "").trim();
+const googleAppsScriptUrl = (
+  process.env.GOOGLE_APPS_SCRIPT_URL ||
+  process.env.GOOGLE_SCRIPT_URL ||
+  ""
+).trim().replace(/^["']|["']$/g, "");
+const buildVersion = "2026.07.17.01";
 const contentTypes = {
   ".css": "text/css; charset=utf-8",
   ".gs": "text/plain; charset=utf-8",
@@ -41,7 +46,7 @@ async function proxyGoogleRequest(request, response, requestPath) {
   if (!googleAppsScriptUrl) {
     sendJson(response, 503, {
       ok: false,
-      error: "Railway variable GOOGLE_APPS_SCRIPT_URL is not configured."
+      error: "GOOGLE_APPS_SCRIPT_URL is missing from this Railway service's production environment."
     });
     return;
   }
@@ -51,7 +56,9 @@ async function proxyGoogleRequest(request, response, requestPath) {
       ? "next-number"
       : request.method === "GET" && requestPath === "/api/lpo"
         ? "list-records"
-        : "";
+        : request.method === "GET" && requestPath === "/api/suppliers"
+          ? "list-suppliers"
+          : "";
     const targetUrl = queryAction
       ? `${googleAppsScriptUrl}${googleAppsScriptUrl.includes("?") ? "&" : "?"}action=${queryAction}`
       : googleAppsScriptUrl;
@@ -81,13 +88,18 @@ const server = http.createServer(async (request, response) => {
   const requestPath = decodeURIComponent((request.url || "/").split("?")[0]);
 
   if (request.method === "GET" && requestPath === "/api/config") {
-    sendJson(response, 200, { googleSheetsConnected: Boolean(googleAppsScriptUrl) });
+    sendJson(response, 200, {
+      googleSheetsConnected: Boolean(googleAppsScriptUrl),
+      buildVersion,
+      expectedVariable: "GOOGLE_APPS_SCRIPT_URL"
+    });
     return;
   }
   if (
     (request.method === "POST" && requestPath === "/api/lpo") ||
     (request.method === "GET" && requestPath === "/api/lpo") ||
-    (request.method === "GET" && requestPath === "/api/lpo/next")
+    (request.method === "GET" && requestPath === "/api/lpo/next") ||
+    (request.method === "GET" && requestPath === "/api/suppliers")
   ) {
     await proxyGoogleRequest(request, response, requestPath);
     return;
